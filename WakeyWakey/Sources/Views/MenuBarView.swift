@@ -57,6 +57,14 @@ struct MenuBarView: View {
                         }
                         .disabled(!viewModel.isIdle)
                         Spacer()
+                        Button {
+                            viewModel.revealScript(name: config.name)
+                        } label: {
+                            Image(systemName: "doc.text")
+                                .font(.caption)
+                        }
+                        .buttonStyle(.borderless)
+                        .help("Show script in Finder")
                         Button(role: .destructive) {
                             viewModel.deleteConfig(name: config.name)
                         } label: {
@@ -74,6 +82,12 @@ struct MenuBarView: View {
                     .font(.caption)
                     .foregroundColor(.red)
                     .lineLimit(2)
+            }
+
+            Divider()
+
+            Button("Open Scripts Folder") {
+                viewModel.openConfigFolder()
             }
 
             Divider()

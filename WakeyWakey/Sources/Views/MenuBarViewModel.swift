@@ -74,6 +74,22 @@ final class MenuBarViewModel: ObservableObject {
         }
     }
 
+    func scriptURL(for name: String) -> URL {
+        URL(fileURLWithPath: settings.configDirectory).appendingPathComponent("\(name).sh")
+    }
+
+    func revealScript(name: String) {
+        let url = scriptURL(for: name)
+        if FileManager.default.fileExists(atPath: url.path) {
+            NSWorkspace.shared.activateFileViewerSelecting([url])
+        }
+    }
+
+    func openConfigFolder() {
+        let url = URL(fileURLWithPath: settings.configDirectory)
+        NSWorkspace.shared.open(url)
+    }
+
     func deleteConfig(name: String) {
         do {
             try configStore.delete(name: name)

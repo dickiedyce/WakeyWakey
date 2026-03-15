@@ -72,6 +72,11 @@ struct PreferencesView: View {
 
 struct GeneralTab: View {
     @ObservedObject var settings: AppSettings
+    @State private var savedConfigs: [SavedConfig] = []
+
+    private var configStore: ConfigStore {
+        ConfigStore(path: settings.configDirectory)
+    }
 
     var body: some View {
         Form {
@@ -91,8 +96,26 @@ struct GeneralTab: View {
                 }
 
                 Toggle("Run saved layout on startup", isOn: $settings.runOnStartup)
+
+                if settings.runOnStartup {
+                    Picker("Layout:", selection: Binding(
+                        get: { settings.startupLayoutName ?? "" },
+                        set: { settings.startupLayoutName = $0.isEmpty ? nil : $0 }
+                    )) {
+                        Text("None").tag("")
+                        ForEach(savedConfigs) { config in
+                            Text(config.name).tag(config.name)
+                        }
+                    }
+                }
             }
         }
+        .onAppear { refreshConfigs() }
+        .onChange(of: settings.configDirectory) { _ in refreshConfigs() }
+    }
+
+    private func refreshConfigs() {
+        savedConfigs = (try? configStore.listConfigs()) ?? []
     }
 }
 

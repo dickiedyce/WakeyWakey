@@ -99,4 +99,11 @@ final class MenuBarViewModel: ObservableObject {
             lastError = error.localizedDescription
         }
     }
+
+    func restoreStartupLayoutIfNeeded() {
+        guard settings.runOnStartup,
+              let name = settings.startupLayoutName,
+              !name.isEmpty else { return }
+        restoreConfig(name: name)
+    }
 }

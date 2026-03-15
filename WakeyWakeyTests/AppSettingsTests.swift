@@ -21,6 +21,7 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.runOnStartup)
         XCTAssertEqual(settings.excludedApps, [])
         XCTAssertEqual(settings.captureDelay, 1.5)
+        XCTAssertNil(settings.startupLayoutName)
     }
 
     func testPersistsConfigDirectory() {
@@ -57,6 +58,7 @@ final class AppSettingsTests: XCTestCase {
         settings.runOnStartup = true
         settings.excludedApps = ["App"]
         settings.captureDelay = 5.0
+        settings.startupLayoutName = "work"
 
         settings.reset()
 
@@ -64,5 +66,21 @@ final class AppSettingsTests: XCTestCase {
         XCTAssertFalse(settings.runOnStartup)
         XCTAssertEqual(settings.excludedApps, [])
         XCTAssertEqual(settings.captureDelay, 1.5)
+        XCTAssertNil(settings.startupLayoutName)
+    }
+
+    func testPersistsStartupLayoutName() {
+        let settings = AppSettings(defaults: defaults)
+        settings.startupLayoutName = "work"
+        let reloaded = AppSettings(defaults: defaults)
+        XCTAssertEqual(reloaded.startupLayoutName, "work")
+    }
+
+    func testClearStartupLayoutName() {
+        let settings = AppSettings(defaults: defaults)
+        settings.startupLayoutName = "work"
+        settings.startupLayoutName = nil
+        let reloaded = AppSettings(defaults: defaults)
+        XCTAssertNil(reloaded.startupLayoutName)
     }
 }

@@ -118,6 +118,55 @@ final class AeroSpaceServiceTests: XCTestCase {
         XCTAssertEqual(occurrences, 1, "Should only appear once per workspace")
     }
 
+    func testGenerateScriptGroupsByWorkspaceWithHeaders() {
+        let snapshot = AeroSpaceSnapshot(timestamp: Date(), windows: [
+            WorkspaceWindow(workspace: "1", appName: "Chrome", windowTitle: "Home"),
+            WorkspaceWindow(workspace: "1", appName: "Helmsman", windowTitle: ""),
+            WorkspaceWindow(workspace: "2", appName: "Code", windowTitle: "main.swift"),
+            WorkspaceWindow(workspace: "2", appName: "Obsidian", windowTitle: "Vault"),
+            WorkspaceWindow(workspace: "3", appName: "Orion", windowTitle: ""),
+        ])
+
+        let script = service.generateScript(from: snapshot)
+
+        // Verify workspace comments
+        XCTAssertTrue(script.contains("# Workspace 1"))
+        XCTAssertTrue(script.contains("# Workspace 2"))
+        XCTAssertTrue(script.contains("# Workspace 3"))
+
+        // Verify summon-workspace calls
+        XCTAssertTrue(script.contains("aerospace summon-workspace 1"))
+        XCTAssertTrue(script.contains("aerospace summon-workspace 2"))
+        XCTAssertTrue(script.contains("aerospace summon-workspace 3"))
+
+        // Verify ordering: workspace 1 section comes before workspace 2
+        let ws1Comment = script.range(of: "# Workspace 1")!.lowerBound
+        let ws2Comment = script.range(of: "# Workspace 2")!.lowerBound
+        let ws3Comment = script.range(of: "# Workspace 3")!.lowerBound
+        XCTAssertTrue(ws1Comment < ws2Comment)
+        XCTAssertTrue(ws2Comment < ws3Comment)
+
+        // Verify apps are under correct workspace
+        let chromeRange = script.range(of: "open_and_assign \"Chrome\" 1")!.lowerBound
+        XCTAssertTrue(chromeRange > ws1Comment && chromeRange < ws2Comment)
+
+        let codeRange = script.range(of: "open_and_assign \"Code\" 2")!.lowerBound
+        XCTAssertTrue(codeRange > ws2Comment && codeRange < ws3Comment)
+    }
+
+    func testGenerateScriptExcludesEmptyWorkspacesAfterFiltering() {
+        let snapshot = AeroSpaceSnapshot(timestamp: Date(), windows: [
+            WorkspaceWindow(workspace: "1", appName: "Chrome", windowTitle: "Home"),
+            WorkspaceWindow(workspace: "2", appName: "Finder", windowTitle: "Desktop"),
+        ])
+
+        let script = service.generateScript(from: snapshot, excludedApps: ["Finder"])
+
+        XCTAssertTrue(script.contains("# Workspace 1"))
+        XCTAssertFalse(script.contains("# Workspace 2"), "Empty workspace after exclusion should be omitted")
+        XCTAssertFalse(script.contains("aerospace summon-workspace 2"))
+    }
+
     // MARK: - AeroSpaceSnapshot
 
     func testSnapshotWindowsByWorkspace() {

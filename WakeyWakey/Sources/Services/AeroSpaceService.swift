@@ -115,16 +115,28 @@ final class AeroSpaceService {
             "    sleep 1.5",
             "    aerospace move-node-to-workspace \"$workspace\"",
             "}",
-            ""
         ]
 
-        // Deduplicate: one entry per app per workspace
-        var seen = Set<String>()
-        for window in snapshot.windows {
-            guard !excluded.contains(window.appName.lowercased()) else { continue }
-            let key = "\(window.workspace)|\(window.appName)"
-            guard seen.insert(key).inserted else { continue }
-            lines.append("open_and_assign \"\(window.appName)\" \(window.workspace)")
+        // Group by workspace, deduplicate apps within each
+        let sortedWorkspaces = snapshot.workspaces
+        for workspace in sortedWorkspaces {
+            let windows = snapshot.windowsByWorkspace[workspace] ?? []
+            var seen = Set<String>()
+            var apps: [String] = []
+            for window in windows {
+                guard !excluded.contains(window.appName.lowercased()) else { continue }
+                if seen.insert(window.appName).inserted {
+                    apps.append(window.appName)
+                }
+            }
+            guard !apps.isEmpty else { continue }
+
+            lines.append("")
+            lines.append("# Workspace \(workspace)")
+            lines.append("aerospace summon-workspace \(workspace)")
+            for app in apps {
+                lines.append("open_and_assign \"\(app)\" \(workspace)")
+            }
         }
 
         lines.append("")

@@ -8,7 +8,11 @@ struct WakeyWakeyApp: App {
     init() {
         let s = AppSettings()
         _settings = StateObject(wrappedValue: s)
-        _viewModel = StateObject(wrappedValue: MenuBarViewModel(settings: s))
+        let vm = MenuBarViewModel(settings: s)
+        _viewModel = StateObject(wrappedValue: vm)
+        Task { @MainActor in
+            vm.restoreStartupLayoutIfNeeded()
+        }
     }
 
     var body: some Scene {

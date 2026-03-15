@@ -1,0 +1,81 @@
+name: WakeyWakey
+options:
+  bundleIdPrefix: com.wakeywakey
+  deploymentTarget:
+    macOS: "13.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+
+configs:
+  Debug: debug
+  Release: release
+
+configFiles:
+  Debug: WakeyWakey/Config/Signing.xcconfig
+  Release: WakeyWakey/Config/Signing.xcconfig
+
+targets:
+  WakeyWakey:
+    type: application
+    platform: macOS
+    sources:
+      - WakeyWakey/Sources
+      - WakeyWakey/Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wakeywakey.app
+        GENERATE_INFOPLIST_FILE: "YES"
+        PRODUCT_NAME: WakeyWakey
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        COMBINE_HIDPI_IMAGES: true
+        CODE_SIGN_ENTITLEMENTS: WakeyWakey/Resources/WakeyWakey.entitlements
+        INFOPLIST_KEY_LSUIElement: true
+        INFOPLIST_KEY_CFBundleDisplayName: WakeyWakey
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 WakeyWakey. All rights reserved."
+      configs:
+        Debug:
+          CODE_SIGNING_ALLOWED: "NO"
+          CODE_SIGNING_REQUIRED: "NO"
+          CODE_SIGN_IDENTITY: ""
+        Release:
+          CODE_SIGNING_ALLOWED: "YES"
+          CODE_SIGNING_REQUIRED: "YES"
+    postBuildScripts:
+      - script: |
+          # Post-build install script
+          if [ "$CODE_SIGNING_ALLOWED" = "YES" ] && [ -n "$CODE_SIGN_IDENTITY" ]; then
+            ENTITLEMENTS="${SRCROOT}/WakeyWakey/Resources/WakeyWakey.entitlements"
+            if [ -f "$ENTITLEMENTS" ]; then
+              echo "Re-signing with entitlements..."
+              codesign --force --sign "$CODE_SIGN_IDENTITY" --entitlements "$ENTITLEMENTS" "$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app"
+              echo "Verifying signature..."
+              codesign --verify --deep --strict "$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app"
+            fi
+            echo "Copying to /Applications..."
+            ditto "$BUILT_PRODUCTS_DIR/$PRODUCT_NAME.app" "/Applications/$PRODUCT_NAME.app"
+            echo "Install complete."
+          else
+            echo "Skipping signing and install (code signing not enabled)."
+          fi
+        name: "Install and Sign"
+        basedOnDependencyAnalysis: false
+
+  WakeyWakeyTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - WakeyWakeyTests
+    dependencies:
+      - target: WakeyWakey
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.wakeywakey.tests
+        GENERATE_INFOPLIST_FILE: "YES"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/WakeyWakey.app/Contents/MacOS/WakeyWakey"
+        BUNDLE_LOADER: "$(TEST_HOST)"

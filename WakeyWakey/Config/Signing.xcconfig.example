@@ -1,0 +1,12 @@
+// Local signing configuration for WakeyWakey
+// Copy this file to Signing.xcconfig and fill in your values.
+// Do NOT commit Signing.xcconfig to git.
+
+// Your Apple Development Team ID
+DEVELOPMENT_TEAM = XXXXXXXXXX
+
+// For local development:
+CODE_SIGN_IDENTITY = Apple Development
+
+// For distribution builds, override with:
+// CODE_SIGN_IDENTITY = Developer ID Application

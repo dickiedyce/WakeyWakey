@@ -31,7 +31,7 @@ for size in sizes {
         context.drawLinearGradient(gradient, start: CGPoint(x: 0, y: s), end: CGPoint(x: s, y: 0), options: [])
     }
 
-    // Draw SF Symbol
+    // Draw SF Symbol in light grey
     let symbolSize = s * 0.55
     let symbolConfig = NSImage.SymbolConfiguration(pointSize: symbolSize, weight: .medium)
     if let symbol = NSImage(systemSymbolName: "airplane", accessibilityDescription: nil)?
@@ -42,8 +42,14 @@ for size in sizes {
             width: symbol.size.width,
             height: symbol.size.height
         )
-        NSColor.white.withAlphaComponent(0.95).set()
-        symbol.draw(in: symbolRect, from: .zero, operation: .sourceOver, fraction: 0.95)
+        // Draw into a temporary image with the desired tint
+        let tinted = NSImage(size: symbol.size)
+        tinted.lockFocus()
+        symbol.draw(in: NSRect(origin: .zero, size: symbol.size))
+        NSColor.white.set()
+        NSRect(origin: .zero, size: symbol.size).fill(using: .sourceAtop)
+        tinted.unlockFocus()
+        tinted.draw(in: symbolRect, from: .zero, operation: .sourceOver, fraction: 1.0)
     }
 
     image.unlockFocus()

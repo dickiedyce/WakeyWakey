@@ -7,9 +7,10 @@ struct MenuBarView: View {
     @State private var showingSaveField = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 2) {
             Text("WakeyWakey")
                 .font(.headline)
+                .padding(.bottom, 2)
             Text(viewModel.statusText)
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -17,7 +18,7 @@ struct MenuBarView: View {
             Divider()
 
             // Capture action
-            Button("Capture Current Layout") {
+            menuButton("Capture Current Layout") {
                 showingSaveField = true
             }
             .disabled(!viewModel.isIdle)
@@ -52,7 +53,7 @@ struct MenuBarView: View {
                     .foregroundColor(.secondary)
                 ForEach(viewModel.savedConfigs) { config in
                     HStack {
-                        Button(config.name) {
+                        menuButton(config.name) {
                             viewModel.restoreConfig(name: config.name)
                         }
                         .disabled(!viewModel.isIdle)
@@ -62,14 +63,16 @@ struct MenuBarView: View {
                         } label: {
                             Image(systemName: "doc.text")
                                 .font(.caption)
+                                .foregroundColor(.secondary)
                         }
                         .buttonStyle(.borderless)
                         .help("Show script in Finder")
-                        Button(role: .destructive) {
+                        Button {
                             viewModel.deleteConfig(name: config.name)
                         } label: {
                             Image(systemName: "trash")
                                 .font(.caption)
+                                .foregroundColor(.secondary)
                         }
                         .buttonStyle(.borderless)
                     }
@@ -86,7 +89,7 @@ struct MenuBarView: View {
 
             Divider()
 
-            Button("Open Scripts Folder") {
+            menuButton("Open Scripts Folder") {
                 viewModel.openConfigFolder()
             }
 
@@ -96,13 +99,14 @@ struct MenuBarView: View {
                 SettingsLink {
                     Text("Preferences...")
                 }
+                .buttonStyle(.plain)
             } else {
-                Button("Preferences...") {
+                menuButton("Preferences...") {
                     NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
                 }
             }
 
-            Button("Quit") {
+            menuButton("Quit") {
                 NSApplication.shared.terminate(nil)
             }
             .keyboardShortcut("q")
@@ -112,5 +116,16 @@ struct MenuBarView: View {
         .onAppear {
             viewModel.refreshConfigs()
         }
+    }
+
+    private func menuButton(_ title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .padding(.vertical, 3)
+        .padding(.horizontal, 4)
+        .contentShape(Rectangle())
     }
 }

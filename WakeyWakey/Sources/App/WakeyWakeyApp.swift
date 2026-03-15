@@ -16,6 +16,7 @@ struct WakeyWakeyApp: App {
             MenuBarView(viewModel: viewModel)
         } label: {
             Image(systemName: viewModel.isCapturing ? "airplane.circle.fill" : "airplane")
+                .foregroundColor(Color.gray.opacity(0.6))
         }
         .menuBarExtraStyle(.window)
 

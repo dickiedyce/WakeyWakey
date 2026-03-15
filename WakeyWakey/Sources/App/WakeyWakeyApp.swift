@@ -15,7 +15,7 @@ struct WakeyWakeyApp: App {
         MenuBarExtra {
             MenuBarView(viewModel: viewModel)
         } label: {
-            Image(systemName: viewModel.isCapturing ? "arrow.triangle.2.circlepath.circle.fill" : "square.grid.2x2")
+            Image(systemName: viewModel.isCapturing ? "airplane.circle.fill" : "airplane")
         }
         .menuBarExtraStyle(.window)
 
